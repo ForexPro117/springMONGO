@@ -10,5 +10,4 @@ import java.util.UUID;
 @Repository
 public interface PGeometryDataRepository extends JpaRepository<GeometryData, UUID> {
 
-    List<GeometryData> findTop100By();
 }
