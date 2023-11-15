@@ -4,7 +4,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Arrays;
 
-//@Document(collection = "geometryData")
+@Document(collection = "geometryDataBytes")
 public class MongoGeometryData extends EntityUuid {
 
     private String hashCode;

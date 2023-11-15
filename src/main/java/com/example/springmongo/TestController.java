@@ -2,6 +2,7 @@ package com.example.springmongo;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
+import java.util.UUID;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.ByteBuffer;
@@ -27,16 +32,31 @@ public class TestController {
     private GeometryDataRepository geometryDataRepository;
 
     @Autowired
+    private GeometryDataMongoRepository geometryDataMongoRepository;
+
+    @Autowired
     private PGeometryDataRepository pgeometryRepository;
 
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @PostMapping("/insert")
+    public ResponseEntity<?> insertData(@RequestBody MongoGeometryData data) {
+        return ResponseEntity.ok(geometryDataMongoRepository.save(data));
+    }
+
+    @GetMapping("/get/{uuid}")
+    public ResponseEntity<?> getdData(@PathVariable UUID uuid) {
+        return ResponseEntity.ok(geometryDataMongoRepository.findById(uuid).orElse(null));
+    }
 
     @GetMapping("/")
     public String getGeometryBatch() {
         LOG.info("Dropping collection...");
-        mongoTemplate.dropCollection(MongoGeometryDataBin.class);
+        mongoTemplate.dropCollection(MongoGeometryData.class);
         LOG.info("Dropped!");
         mongoTemplate.setWriteConcern(WriteConcern.W1.withJournal(true));
 
@@ -47,9 +67,9 @@ public class TestController {
         for (int i = 0; i < chunks; i++) {
             Instant start = Instant.now();
 
-            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryDataBin.class);
+            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryData.class);
             var page = pgeometryRepository.findAll(PageRequest.of(i, 500));
-            page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
+            page.stream().forEach(el -> bulkInsertion.insert(modelMapper.map(el, MongoGeometryData.class)));
 
             LOG.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
             BulkWriteResult bulkWriteResult = bulkInsertion.execute();
