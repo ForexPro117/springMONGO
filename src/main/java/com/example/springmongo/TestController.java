@@ -56,10 +56,12 @@ public class TestController {
 
     @PostMapping("/get/uuids")
     public ResponseEntity<?> getDatas(@RequestBody List<UUID> uuids) {
-        long time = System.currentTimeMillis();
-        Iterable<MongoGeometryData> list = geometryDataMongoRepository.findAllById(uuids);
-        System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
-        return ResponseEntity.ok(list);
+        for (int i = 0; i < 10; i++) {
+            long time = System.currentTimeMillis();
+            Iterable<MongoGeometryData> list = geometryDataMongoRepository.findAllById(uuids);
+            System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
+        }
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping("/")
