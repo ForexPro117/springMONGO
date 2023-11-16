@@ -2,6 +2,7 @@ package com.example.springmongo;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
+import java.util.List;
 import java.util.UUID;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -51,6 +52,14 @@ public class TestController {
     @GetMapping("/get/{uuid}")
     public ResponseEntity<?> getdData(@PathVariable UUID uuid) {
         return ResponseEntity.ok(geometryDataMongoRepository.findById(uuid).orElse(null));
+    }
+
+    @PostMapping("/get/uuids")
+    public ResponseEntity<?> getDatas(@RequestBody List<UUID> uuids) {
+        long time = System.currentTimeMillis();
+        Iterable<MongoGeometryData> list = geometryDataMongoRepository.findAllById(uuids);
+        System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/")
