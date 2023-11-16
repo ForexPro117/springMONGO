@@ -2,6 +2,11 @@ package com.example.springmongo;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.bulk.BulkWriteResult;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import javax.annotation.PostConstruct;
+import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,8 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.ByteBuffer;
@@ -32,6 +40,50 @@ public class TestController {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @PostConstruct
+    public void setupMapper() {
+        modelMapper.createTypeMap(MongoGeometryDataBin.class, GeometryData.class)
+                .setPostConverter(toGeometryDataConverter());
+    }
+
+    private Converter<MongoGeometryDataBin, GeometryData> toGeometryDataConverter() {
+        return context -> {
+            MongoGeometryDataBin source = context.getSource();
+            GeometryData destination = context.getDestination();
+
+            destination.setColors(getFloatArray(source.getColors()));
+            destination.setNormals(getFloatArray(source.getNormals()));
+            destination.setIndices(getIntArray(source.getIndices()));
+            destination.setColorsQuantized(getIntArray(source.getColorsQuantized()));
+            destination.setVertices(getDoubleArray(source.getVertices()));
+
+            return destination;
+        };
+    }
+
+    @PostMapping("/get/uuids")
+    public ResponseEntity<?> getDatas(@RequestBody List<UUID> uuids) {
+        long time = System.currentTimeMillis();
+        Iterable<MongoGeometryDataBin> list = geometryDataRepository.findAllById(uuids);
+        List<GeometryData> gData = new ArrayList<>();
+//        list.forEach(el -> gData.add(modelMapper.map(el, GeometryData.class)));
+        list.forEach(el -> {
+            GeometryData data = new GeometryData();
+            data.setUuid(el.getUuid());
+            data.setColors(getFloatArray(el.getColors()));
+            data.setNormals(getFloatArray(el.getNormals()));
+            data.setIndices(getIntArray(el.getIndices()));
+            data.setColorsQuantized(getIntArray(el.getColorsQuantized()));
+            data.setVertices(getDoubleArray(el.getVertices()));
+            data.setHashCode(el.getHashCode());
+            gData.add(data);
+        });
+        System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
+        return ResponseEntity.ok(gData);
+    }
 
     @GetMapping("/")
     public String getGeometryBatch() {
@@ -97,6 +149,33 @@ public class TestController {
             bb.putInt(d);
         }
         return bb.array();
+    }
+
+    private int[] getIntArray(byte[] arr) {
+        ByteBuffer bb = ByteBuffer.wrap(arr);
+        int[] ints = new int[arr.length / 4];
+        for(int i = 0; i < ints.length; i++) {
+            ints[i] = bb.getInt();
+        }
+        return ints;
+    }
+
+    private float[] getFloatArray(byte[] arr) {
+        ByteBuffer bb = ByteBuffer.wrap(arr);
+        float[] floats = new float[arr.length / 4];
+        for(int i = 0; i < floats.length; i++) {
+            floats[i] = bb.getFloat();
+        }
+        return floats;
+    }
+
+    private double[] getDoubleArray(byte[] arr) {
+        ByteBuffer bb = ByteBuffer.wrap(arr);
+        double[] doubles = new double[arr.length / 8];
+        for(int i = 0; i < doubles.length; i++) {
+            doubles[i] = bb.getDouble();
+        }
+        return doubles;
     }
 
 }
