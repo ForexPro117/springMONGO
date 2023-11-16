@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -32,6 +33,15 @@ public class GeometryData {
 
     private float[] colors;
 
+    private Timestamp createDate;
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
 
     public String getHashCode() {
         return hashCode;

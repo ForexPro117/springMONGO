@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 
 @RestController
 @CrossOrigin
@@ -43,7 +45,7 @@ public class TestController {
             Instant start = Instant.now();
 
             BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryDataBin.class);
-            var page = pgeometryRepository.findAll(PageRequest.of(i, 500));
+            var page = pgeometryRepository.findAllByCreateDateBefore(new Timestamp(new Date().getTime()), PageRequest.of(i, 500));
             page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
 
             LOG.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
