@@ -66,23 +66,25 @@ public class TestController {
 
     @PostMapping("/get/uuids")
     public ResponseEntity<?> getDatas(@RequestBody List<UUID> uuids) {
-        long time = System.currentTimeMillis();
-        Iterable<MongoGeometryDataBin> list = geometryDataRepository.findAllById(uuids);
-        List<GeometryData> gData = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            long time = System.currentTimeMillis();
+            Iterable<MongoGeometryDataBin> list = geometryDataRepository.findAllById(uuids);
+            List<GeometryData> gData = new ArrayList<>();
 //        list.forEach(el -> gData.add(modelMapper.map(el, GeometryData.class)));
-        list.forEach(el -> {
-            GeometryData data = new GeometryData();
-            data.setUuid(el.getUuid());
-            data.setColors(getFloatArray(el.getColors()));
-            data.setNormals(getFloatArray(el.getNormals()));
-            data.setIndices(getIntArray(el.getIndices()));
-            data.setColorsQuantized(getIntArray(el.getColorsQuantized()));
-            data.setVertices(getDoubleArray(el.getVertices()));
-            data.setHashCode(el.getHashCode());
-            gData.add(data);
-        });
-        System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
-        return ResponseEntity.ok(gData);
+            list.forEach(el -> {
+                GeometryData data = new GeometryData();
+                data.setUuid(el.getUuid());
+                data.setColors(getFloatArray(el.getColors()));
+                data.setNormals(getFloatArray(el.getNormals()));
+                data.setIndices(getIntArray(el.getIndices()));
+                data.setColorsQuantized(getIntArray(el.getColorsQuantized()));
+                data.setVertices(getDoubleArray(el.getVertices()));
+                data.setHashCode(el.getHashCode());
+                gData.add(data);
+            });
+            System.err.println("Get 150 gData: " + (System.currentTimeMillis() - time) + " мс");
+        }
+        return ResponseEntity.ok(null);
     }
 
     @GetMapping("/")
