@@ -22,7 +22,7 @@ import java.util.Date;
 @CrossOrigin
 public class TestController {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TestController.class);
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
 
     @Autowired
     private PGeometryDataRepository pgeometryRepository;
@@ -32,29 +32,34 @@ public class TestController {
 
     @GetMapping("/")
     public String getGeometryBatch() {
-        LOG.info("Dropping collection...");
+        log.info("Dropping collection...");
         mongoTemplate.dropCollection(MongoGeometryDataBin.class);
-        LOG.info("Dropped!");
+        log.info("Dropped!");
         mongoTemplate.setWriteConcern(WriteConcern.W1.withJournal(true));
 
+        var size = pgeometryRepository.countAllByCreateDateBefore(new Timestamp(new Date().getTime()));
+        var dateToConvert = new Timestamp(new Date().getTime());
 
         var time = System.currentTimeMillis();
-        var size = pgeometryRepository.count();
         int chunks = (int) Math.ceil(size / 500d);
         for (int i = 0; i < chunks; i++) {
             Instant start = Instant.now();
 
             BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryDataBin.class);
-            var page = pgeometryRepository.findAllByCreateDateBefore(new Timestamp(new Date().getTime()), PageRequest.of(i, 500));
+            var page = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 500));
             page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
 
-            LOG.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
+            log.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
             BulkWriteResult bulkWriteResult = bulkInsertion.execute();
-            LOG.info("Bulk insert of " + bulkWriteResult.getInsertedCount() + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
-            LOG.info("STEP: " + (i + 1) + "/" + chunks);
+            log.info("Bulk insert of " + bulkWriteResult.getInsertedCount() + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
+            log.info("STEP: " + (i + 1) + "/" + chunks);
 
         }
-        LOG.info("ok " + (System.currentTimeMillis() - time) + " ms");
+
+        log.info("ok " + (System.currentTimeMillis() - time) + " ms");
+        log.info("Date to find converted rows : " + dateToConvert);
+        log.info("Table row count under time: " + size);
+
         return "ok " + (System.currentTimeMillis() - time) + " ms";
 
     }

@@ -13,4 +13,6 @@ public interface PGeometryDataRepository extends JpaRepository<GeometryData, UUI
 
     Page<GeometryData> findAllByCreateDateBefore(Timestamp date , Pageable pageable);
 
+    Long countAllByCreateDateBefore(Timestamp date);
+
 }
