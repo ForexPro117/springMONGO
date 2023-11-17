@@ -1,13 +1,10 @@
 package com.example.springmongo;
 
-import com.mongodb.WriteConcern;
-import com.mongodb.bulk.BulkWriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.cassandra.core.cql.CqlOperations;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.core.BulkOperations;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +14,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -28,12 +26,46 @@ public class TestController {
     private PGeometryDataRepository pgeometryRepository;
 
     @Autowired
-    MongoTemplate mongoTemplate;
+    CqlOperations cqlOperations;
+
+//    @GetMapping("/")
+//    public String getGeometryBatch() {
+//        log.info("Dropping collection...");
+//        mongoTemplate.dropCollection(CassandraGeometryData.class);
+//        log.info("Dropped!");
+//        mongoTemplate.setWriteConcern(WriteConcern.W1.withJournal(true));
+//
+//        var size = pgeometryRepository.countAllByCreateDateBefore(new Timestamp(new Date().getTime()));
+//        var dateToConvert = new Timestamp(new Date().getTime());
+//
+//        var time = System.currentTimeMillis();
+//        int chunks = (int) Math.ceil(size / 500d);
+//        for (int i = 0; i < chunks; i++) {
+//            Instant start = Instant.now();
+//
+//            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, CassandraGeometryData.class);
+//            var page = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 500));
+//            page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
+//
+//            log.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
+//            BulkWriteResult bulkWriteResult = bulkInsertion.execute();
+//            log.info("Bulk insert of " + bulkWriteResult.getInsertedCount() + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
+//            log.info("STEP: " + (i + 1) + "/" + chunks);
+//
+//        }
+//
+//        log.info("ok " + (System.currentTimeMillis() - time) + " ms");
+//        log.info("Date to find converted rows : " + dateToConvert);
+//        log.info("Table row count under time: " + size);
+//
+//        return "ok " + (System.currentTimeMillis() - time) + " ms";
+//
+//    }
 
     @GetMapping("/")
     public String getGeometryBatch() {
         log.info("Dropping collection...");
-        mongoTemplate.dropCollection(MongoGeometryDataBin.class);
+        mongoTemplate.dropCollection(CassandraGeometryData.class);
         log.info("Dropped!");
         mongoTemplate.setWriteConcern(WriteConcern.W1.withJournal(true));
 
@@ -45,7 +77,7 @@ public class TestController {
         for (int i = 0; i < chunks; i++) {
             Instant start = Instant.now();
 
-            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryDataBin.class);
+            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, CassandraGeometryData.class);
             var page = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 500));
             page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
 
@@ -54,18 +86,31 @@ public class TestController {
             log.info("Bulk insert of " + bulkWriteResult.getInsertedCount() + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
             log.info("STEP: " + (i + 1) + "/" + chunks);
 
+
+            log.info("ok " + (System.currentTimeMillis() - time) + " ms");
+            log.info("Date to find converted rows : " + dateToConvert);
+            log.info("Table row count under time: " + size);
+
+            StringBuilder builder = new StringBuilder();
+            for (var j = i * 100; j < Math.min((i + 1) * 100, books.length); j++) {
+                var book = books[j];
+                builder.append("INSERT INTO Book (id, title, publisher, tags) VALUES ");
+                builder.append(String.format("(%s, '%s', '%s', ['%s']);",
+                        book.getId(), book.getTitle(), book.getPublisher(), book.getTags().stream().collect(Collectors.joining("', '"))));
+            }
+            cqlOperations.execute("BEGIN BATCH " + builder.toString() + " APPLY BATCH;");
         }
+
 
         log.info("ok " + (System.currentTimeMillis() - time) + " ms");
         log.info("Date to find converted rows : " + dateToConvert);
         log.info("Table row count under time: " + size);
-
         return "ok " + (System.currentTimeMillis() - time) + " ms";
 
     }
 
-    private MongoGeometryDataBin convert(GeometryData data) {
-        MongoGeometryDataBin bin = new MongoGeometryDataBin();
+    private CassandraGeometryData convert(GeometryData data) {
+        CassandraGeometryData bin = new CassandraGeometryData();
         bin.setUuid(data.getUuid());
         bin.setIndices(getByteArray(data.getIndices()));
         bin.setVertices(getByteArray(data.getVertices()));

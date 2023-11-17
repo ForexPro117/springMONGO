@@ -1,12 +1,17 @@
 package com.example.springmongo;
 
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+
+import javax.persistence.Table;
 import java.util.Arrays;
+import java.util.UUID;
 
-@Document(collection = "geometryData")
-public class MongoGeometryDataBin extends EntityUuid {
+@Table
+public class CassandraGeometryData {
 
+    @PrimaryKeyColumn
+    private UUID uuid;
     private String hashCode;
     private byte[] indices;
     private byte[] vertices;
@@ -14,6 +19,13 @@ public class MongoGeometryDataBin extends EntityUuid {
     private byte[] colorsQuantized;
     private byte[] colors;
 
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
 
     public String getHashCode() {
         return hashCode;
