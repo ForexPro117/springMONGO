@@ -174,7 +174,7 @@ public class ConvertController {
         for (double d : arr) {
             bb.putDouble(d);
         }
-        return bb;
+        return ByteBuffer.wrap(bb.array());
     }
 
     private ByteBuffer getByteArray(float[] arr) {
@@ -182,7 +182,7 @@ public class ConvertController {
         for (float d : arr) {
             bb.putFloat(d);
         }
-        return bb;
+        return ByteBuffer.wrap(bb.array());
     }
 
     private ByteBuffer getByteArray(int[] arr) {
@@ -190,7 +190,7 @@ public class ConvertController {
         for (int d : arr) {
             bb.putInt(d);
         }
-        return bb;
+        return ByteBuffer.wrap(bb.array());
     }
 
     private int[] getIntArray(byte[] arr) {
