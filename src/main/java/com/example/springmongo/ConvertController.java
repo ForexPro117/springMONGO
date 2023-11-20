@@ -120,7 +120,7 @@ public class ConvertController {
 //
 //    }
     @GetMapping("/")
-    public String getGeometryBatch() throws IOException {
+    public String getGeometryBatch(){
         log.info("Create keyspace...");
         template.getCqlOperations().execute(createKeyspace());
         log.info("Create table...");
@@ -128,22 +128,23 @@ public class ConvertController {
         log.info("Truncate table...");
         template.truncate(CassandraGeometryData.class);
         log.info("Ready to work!");
+        int batchSize = 250;
 
 
         var size = pgeometryRepository.countAllByCreateDateBefore(new Timestamp(new Date().getTime()));
         var dateToConvert = new Timestamp(new Date().getTime());
         var time = System.currentTimeMillis();
-        int chunks = (int) Math.ceil(size / 100d);
+        int chunks = (int) Math.ceil(size / (double)batchSize);
 
 
         for (int i = 0; i < chunks; i++) {
             Instant start = Instant.now();
-            var list = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 100))
+            var list = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, batchSize))
                     .map(this::convert).toList();
 
             log.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
             cassandraGeometryDataRepository.saveAll(list);
-            log.info("Bulk insert of " + 100 + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
+            log.info("Insert of " + batchSize + " rows completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
             log.info("STEP: " + (i + 1) + "/" + chunks);
         }
 
