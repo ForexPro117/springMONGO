@@ -1,23 +1,27 @@
 package com.example.springmongo;
 
 
-import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
+import org.springframework.data.cassandra.core.mapping.Column;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
-import javax.persistence.Table;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.UUID;
 
-@Table
+@Table(value = "geometry_data")
 public class CassandraGeometryData {
 
-    @PrimaryKeyColumn
+    @PrimaryKey
     private UUID uuid;
+    @Column(value = "hash_code")
     private String hashCode;
-    private byte[] indices;
-    private byte[] vertices;
-    private byte[] normals;
-    private byte[] colorsQuantized;
-    private byte[] colors;
+    private ByteBuffer indices;
+    private ByteBuffer vertices;
+    private ByteBuffer normals;
+    @Column(value = "colors_quantized")
+    private ByteBuffer colorsQuantized;
+    private ByteBuffer colors;
 
     public UUID getUuid() {
         return uuid;
@@ -35,63 +39,63 @@ public class CassandraGeometryData {
         this.hashCode = hashCode;
     }
 
-    public byte[] getIndices() {
+    public ByteBuffer getIndices() {
         return indices;
     }
 
-    public void setIndices(byte[] indices) {
+    public void setIndices(ByteBuffer indices) {
         this.indices = indices;
     }
 
-    public byte[] getVertices() {
+    public ByteBuffer getVertices() {
         return vertices;
     }
 
-    public void setVertices(byte[] vertices) {
+    public void setVertices(ByteBuffer vertices) {
         this.vertices = vertices;
     }
 
-    public byte[] getNormals() {
+    public ByteBuffer getNormals() {
         return normals;
     }
 
-    public void setNormals(byte[] normals) {
+    public void setNormals(ByteBuffer normals) {
         this.normals = normals;
     }
 
-    public byte[] getColorsQuantized() {
+    public ByteBuffer getColorsQuantized() {
         return colorsQuantized;
     }
 
-    public void setColorsQuantized(byte[] colorsQuantized) {
+    public void setColorsQuantized(ByteBuffer colorsQuantized) {
         this.colorsQuantized = colorsQuantized;
     }
 
-    public byte[] getColors() {
+    public ByteBuffer getColors() {
         return colors;
     }
 
-    public void setColors(byte[] colors) {
+    public void setColors(ByteBuffer colors) {
         this.colors = colors;
     }
 
-    public String calcHash() {
-        StringBuffer hashCode = new StringBuffer();
-        if (getIndices() != null) {
-            hashCode.append(Arrays.hashCode(getIndices()));
-        }
-        if (getVertices() != null) {
-            hashCode.append("_").append(Arrays.hashCode(getVertices()));
-        }
-        if (getNormals() != null) {
-            hashCode.append("_").append(Arrays.hashCode(getNormals()));
-        }
-        if (getColorsQuantized() != null) {
-            hashCode.append("_").append(Arrays.hashCode(getColorsQuantized()));
-        }
-        if (getColors() != null) {
-            hashCode.append("_").append(Arrays.hashCode(getColors()));
-        }
-        return hashCode.toString();
-    }
+//    public String calcHash() {
+//        StringBuffer hashCode = new StringBuffer();
+//        if (getIndices() != null) {
+//            hashCode.append(Arrays.hashCode(getIndices()));
+//        }
+//        if (getVertices() != null) {
+//            hashCode.append("_").append(Arrays.hashCode(getVertices()));
+//        }
+//        if (getNormals() != null) {
+//            hashCode.append("_").append(Arrays.hashCode(getNormals()));
+//        }
+//        if (getColorsQuantized() != null) {
+//            hashCode.append("_").append(Arrays.hashCode(getColorsQuantized()));
+//        }
+//        if (getColors() != null) {
+//            hashCode.append("_").append(Arrays.hashCode(getColors()));
+//        }
+//        return hashCode.toString();
+//    }
 }
