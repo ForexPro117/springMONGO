@@ -1,6 +1,7 @@
 package com.example.springmongo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.ApplicationContext;
@@ -25,6 +26,9 @@ import java.util.UUID;
 @EnableJpaRepositories(basePackages = "com.example")
 public class Config extends AbstractMongoClientConfiguration {
 
+    @Value( "${spring.data.mongodb.database:pirsbim}" )
+    private String databaseName;
+
     @Bean
     public BeforeConvertCallback<EntityUuid> beforeSaveCallback() {
 
@@ -48,6 +52,6 @@ public class Config extends AbstractMongoClientConfiguration {
 
     @Override
     protected String getDatabaseName() {
-        return "pirsbim";
+        return databaseName;
     }
 }
