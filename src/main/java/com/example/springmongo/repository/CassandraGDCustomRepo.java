@@ -29,7 +29,7 @@ public class CassandraGDCustomRepo {
 
     public List<CassandraGeometryData> saveAll(Iterable<CassandraGeometryData> entity) {
         List<CassandraGeometryData> result = new ArrayList<>();
-        StreamSupport.stream(entity.spliterator(), false).parallel().forEach(el -> result.add(save(el)));
+        StreamSupport.stream(entity.spliterator(), true).forEach(el -> result.add(save(el)));
         return result;
     }
 
