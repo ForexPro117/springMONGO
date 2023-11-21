@@ -7,13 +7,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.UUID;
 
 @Entity
 @Table(indexes = {@Index(name = "idx_hashcode", columnList = "hashCode")})
-public class GeometryData {
+public class GeometryData implements Serializable {
 
     @Id
     @GeneratedValue

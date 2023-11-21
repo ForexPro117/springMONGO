@@ -1,22 +1,24 @@
 package com.example.springmongo;
 
-import com.mongodb.WriteConcern;
-import com.mongodb.bulk.BulkWriteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin
@@ -30,12 +32,28 @@ public class TestController {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @Autowired
+    private CustomMongoRepository customMongoRepository;
+
+    @PostMapping("/")
+    public List test(@RequestBody List<UUID> uuids) {
+//        UUID uuid = UUID.randomUUID();
+//        GeometryData data = new GeometryData();
+//        data.setUuid(uuid);
+//        customMongoRepository.save(data);
+//        customMongoRepository.findById(uuid);
+        var time = System.currentTimeMillis();
+        var list = customMongoRepository.findAll(uuids);
+        log.info(System.currentTimeMillis() - time + " ms");
+        return list;
+    }
+
     @GetMapping("/")
     public String getGeometryBatch() {
         log.info("Dropping collection...");
-        mongoTemplate.dropCollection(MongoGeometryDataBin.class);
+        mongoTemplate.dropCollection("fs.files");
+        mongoTemplate.dropCollection("fs.chunks");
         log.info("Dropped!");
-        mongoTemplate.setWriteConcern(WriteConcern.W1.withJournal(true));
 
         var size = pgeometryRepository.countAllByCreateDateBefore(new Timestamp(new Date().getTime()));
         var dateToConvert = new Timestamp(new Date().getTime());
@@ -45,13 +63,11 @@ public class TestController {
         for (int i = 0; i < chunks; i++) {
             Instant start = Instant.now();
 
-            BulkOperations bulkInsertion = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, MongoGeometryDataBin.class);
-            var page = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 500));
-            page.stream().forEach(el -> bulkInsertion.insert(convert(el)));
+            var page = pgeometryRepository.findAllByCreateDateBefore(dateToConvert, PageRequest.of(i, 500)).toList();
 
             log.info("Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
-            BulkWriteResult bulkWriteResult = bulkInsertion.execute();
-            log.info("Bulk insert of " + bulkWriteResult.getInsertedCount() + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
+            customMongoRepository.saveAll(page);
+            log.info("Bulk insert of " + 500 + " documents completed in " + Duration.between(start, Instant.now()).toMillis() + " milliseconds");
             log.info("STEP: " + (i + 1) + "/" + chunks);
 
         }
