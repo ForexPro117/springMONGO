@@ -1,27 +1,20 @@
 package com.example.springmongo;
 
 
-import org.springframework.data.cassandra.core.mapping.Column;
-import org.springframework.data.cassandra.core.mapping.PrimaryKey;
-import org.springframework.data.cassandra.core.mapping.Table;
-
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.UUID;
+import org.springframework.data.cassandra.core.mapping.Column;
 
-@Table(value = "geometry_data")
 public class CassandraGeometryData {
 
-    @PrimaryKey
     private UUID uuid;
     @Column(value = "hash_code")
     private String hashCode;
-    private ByteBuffer indices;
-    private ByteBuffer vertices;
-    private ByteBuffer normals;
+    private int[] indices;
+    private double[] vertices;
+    private float[] normals;
     @Column(value = "colors_quantized")
-    private ByteBuffer colorsQuantized;
-    private ByteBuffer colors;
+    private int[] colorsQuantized;
+    private float[] colors;
 
     public UUID getUuid() {
         return uuid;
@@ -39,47 +32,47 @@ public class CassandraGeometryData {
         this.hashCode = hashCode;
     }
 
-    public ByteBuffer getIndices() {
+    public int[] getIndices() {
         return indices;
     }
 
-    public void setIndices(ByteBuffer indices) {
+    public void setIndices(int[] indices) {
         this.indices = indices;
     }
 
-    public ByteBuffer getVertices() {
+    public double[] getVertices() {
         return vertices;
     }
 
-    public void setVertices(ByteBuffer vertices) {
+    public void setVertices(double[] vertices) {
         this.vertices = vertices;
     }
 
-    public ByteBuffer getNormals() {
+    public float[] getNormals() {
         return normals;
     }
 
-    public void setNormals(ByteBuffer normals) {
+    public void setNormals(float[] normals) {
         this.normals = normals;
     }
 
-    public ByteBuffer getColorsQuantized() {
+    public int[] getColorsQuantized() {
         return colorsQuantized;
     }
 
-    public void setColorsQuantized(ByteBuffer colorsQuantized) {
+    public void setColorsQuantized(int[] colorsQuantized) {
         this.colorsQuantized = colorsQuantized;
     }
 
-    public ByteBuffer getColors() {
+    public float[] getColors() {
         return colors;
     }
 
-    public void setColors(ByteBuffer colors) {
+    public void setColors(float[] colors) {
         this.colors = colors;
     }
 
-//    public String calcHash() {
+    //    public String calcHash() {
 //        StringBuffer hashCode = new StringBuffer();
 //        if (getIndices() != null) {
 //            hashCode.append(Arrays.hashCode(getIndices()));
