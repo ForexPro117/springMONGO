@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,9 +43,8 @@ public class TestController {
 //        data.setUuid(uuid);
 //        customMongoRepository.save(data);
 //        customMongoRepository.findById(uuid);
-        var time = System.currentTimeMillis();
-        customMongoRepository.deleteAll(uuids);
-        log.info(System.currentTimeMillis() - time + " ms");
+//        var time = System.currentTimeMillis();
+        var a = customMongoRepository.findById(UUID.fromString("41778eb8-132a-4126-bcf8-56938c4a9209"));
         return null;
     }
 
@@ -57,7 +57,7 @@ public class TestController {
     }
 
     @GetMapping("/{batchSize}")
-    public String batchConvertDB(@PathVariable int batchSize) {
+    public String batchConvertDB(@PathVariable int batchSize){
         var dateToConvert = new Timestamp(new Date().getTime());
         var size = pgeometryRepository.countAllByCreateDateBeforeAndConvertedFalse(dateToConvert);
         log.info("Date to find converted rows : " + dateToConvert);
@@ -65,8 +65,10 @@ public class TestController {
 
         var time = System.currentTimeMillis();
         int chunks = (int) Math.ceil(size / (double) batchSize);
-        for (int i = 0; i < chunks; i++) {
-            pullBatch(batchSize, dateToConvert, i, chunks);
+        int currentChunk = 1;
+        var hasNext = pullBatch(batchSize, dateToConvert, currentChunk, chunks);
+        while (hasNext) {
+            hasNext = pullBatch(batchSize, dateToConvert, ++currentChunk, chunks);
         }
 
         log.info("ok " + (System.currentTimeMillis() - time) + " ms");
@@ -77,28 +79,35 @@ public class TestController {
 
     }
 
-    public void pullBatch(int batchSize, Timestamp dateToConvert, int i, int chunks) {
+    public boolean pullBatch(int batchSize, Timestamp dateToConvert, int currentChunk, int chunks) {
         try {
-            log.info("STEP: " + (i + 1) + "/" + chunks);
+            log.info("STEP: " + currentChunk + "/" + chunks);
             Instant start = Instant.now();
-            var page = pgeometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, PageRequest.of(i, batchSize))
-                    .stream().map(GeometryData::convert).collect(Collectors.toList());
+            var page = pgeometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, PageRequest.of(0, batchSize))
+                    .stream().peek(el -> el.setConverted(true)).collect(Collectors.toList());
 
-            log.info("1) Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
+            log.info("1) Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms; List size: " + page.size());
 
-            customMongoRepository.saveAll(page);
+            if (page.isEmpty()) {
+                return false;
+            }
+
+            page.parallelStream().forEach(el -> customMongoRepository.save(el.convert()));
 
             log.info("2) Saved in mongodb " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
 
-            pgeometryRepository.markAsConverted(page.parallelStream().map(OnSaveData::getUuid).collect(Collectors.toList()));
+            pgeometryRepository.saveAll(page);
+            Thread.sleep(new Random().nextInt(75) + 25);
 
             log.info("3) Patch postgres " + Duration.between(start, Instant.now()).toMillis() + " ms");
 
+
         } catch (Exception ex) {
-            log.error("STEP: " + i + "/" + chunks + " error:" + ex.getMessage());
+            log.error("STEP: " + currentChunk + "/" + chunks + " error:" + ex.getMessage());
             log.error("Date to find converted rows : " + dateToConvert);
-            throw new RuntimeException();
+            throw new RuntimeException(ex);
         }
+        return true;
     }
 
 }
