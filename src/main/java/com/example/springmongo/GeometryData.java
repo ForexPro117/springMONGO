@@ -36,12 +36,22 @@ public class GeometryData implements Serializable {
 
     private Timestamp createDate;
 
+    private boolean converted;
+
     public Timestamp getCreateDate() {
         return createDate;
     }
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isConverted() {
+        return converted;
+    }
+
+    public void setConverted(boolean converted) {
+        this.converted = converted;
     }
 
     public String getHashCode() {
@@ -118,6 +128,18 @@ public class GeometryData implements Serializable {
             hashCode.append("_").append(Arrays.hashCode(getColors()));
         }
         return hashCode.toString();
+    }
+
+    public OnSaveData convert() {
+        OnSaveData data = new OnSaveData();
+        data.setUuid(uuid);
+        data.setHashCode(hashCode);
+        data.setIndices(indices);
+        data.setVertices(vertices);
+        data.setNormals(normals);
+        data.setColorsQuantized(colorsQuantized);
+        data.setColors(colors);
+        return data;
     }
 
 }
