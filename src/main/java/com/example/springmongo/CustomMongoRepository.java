@@ -14,26 +14,27 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Component
-public class CustomMongoRepository<T extends GeometryData> {
+public class CustomMongoRepository<T extends OnSaveData> {
 
     @Autowired
     private GridFsTemplate gridFsTemplate;
 
 
-    public void saveAll(Iterable<T> entities) {
-        StreamSupport.stream(entities.spliterator(), true).forEach(this::save);
+    public void saveAll(Collection<T> entities) {
+        entities.parallelStream().forEach(this::save);
     }
 
     public void save(T entity) {
         DBObject metaData = new BasicDBObject();
         metaData.put("_id", entity.getUuid());
+        metaData.put("hashcode", entity.getHashCode());
         try (InputStream stream = new ByteArrayInputStream(SerializationUtils.serialize(entity))) {
             gridFsTemplate.store(stream, entity.getUuid().toString(), metaData);
         } catch (IOException e) {

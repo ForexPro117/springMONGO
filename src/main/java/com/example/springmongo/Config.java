@@ -24,11 +24,7 @@ import java.util.UUID;
 @EnableMongoRepositories(basePackages = "com.example")
 @ConfigurationPropertiesScan("com.example")
 @EnableJpaRepositories(basePackages = "com.example")
-public class Config extends AbstractMongoClientConfiguration {
-
-    @Value( "${spring.data.mongodb.database:pirsbim}" )
-    private String databaseName;
-
+public class Config {
     @Bean
     public BeforeConvertCallback<EntityUuid> beforeSaveCallback() {
 
@@ -41,17 +37,4 @@ public class Config extends AbstractMongoClientConfiguration {
         };
     }
 
-    @Autowired
-    private ApplicationContext context;
-
-    @Bean
-    public GridFsTemplate gridFsTemplate() throws Exception {
-        return new GridFsTemplate(mongoDbFactory(),context.getBean(MongoConverter.class));
-    }
-
-
-    @Override
-    protected String getDatabaseName() {
-        return databaseName;
-    }
 }
