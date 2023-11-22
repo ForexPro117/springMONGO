@@ -65,7 +65,7 @@ public class TestController {
 
         var time = System.currentTimeMillis();
         int chunks = (int) Math.ceil(size / (double) batchSize);
-        int currentChunk = 1;
+        int currentChunk = 0;
         var hasNext = pullBatch(batchSize, dateToConvert, currentChunk, chunks);
         while (hasNext) {
             hasNext = pullBatch(batchSize, dateToConvert, ++currentChunk, chunks);
