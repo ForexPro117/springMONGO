@@ -81,15 +81,14 @@ public class TestController {
 
     public boolean pullBatch(int batchSize, Timestamp dateToConvert, int currentChunk, int chunks) {
         try {
-            Thread.sleep(new Random().nextInt(20) + 15);
+            Thread.sleep(new Random().nextInt(10) + 15);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         try {
             log.info("STEP: " + currentChunk + "/" + chunks);
             Instant start = Instant.now();
-            var page = pgeometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, PageRequest.of(0, batchSize))
-                    .stream().parallel().map(GeometryData::convert).collect(Collectors.toList());
+            var page = pgeometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, PageRequest.of(0, batchSize)).toList();
 
             log.info("1) Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms; List size: " + page.size());
 
@@ -97,16 +96,13 @@ public class TestController {
                 return false;
             }
 
-            customMongoRepository.saveAll(page);
+            customMongoRepository.saveAll(page.stream().parallel().map(GeometryData::convert).collect(Collectors.toList()));
 
             log.info("2) Saved in mongodb " + Duration.between(start, start = Instant.now()).toMillis() + " ms");
 
-            pgeometryRepository.markAsConverted(page.stream().parallel().map(OnSaveData::getUuid).collect(Collectors.toList()));
+            pgeometryRepository.markAsConverted(page.stream().parallel().map(GeometryData::getUuid).collect(Collectors.toList()));
 
             log.info("3) Patch postgres " + Duration.between(start, Instant.now()).toMillis() + " ms");
-
-            page.clear();
-
 
         } catch (Exception ex) {
             log.error("STEP: " + currentChunk + "/" + chunks + " error:" + ex.getMessage());
