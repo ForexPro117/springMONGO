@@ -1,5 +1,9 @@
 package com.example.springmongo;
 
+import com.example.springmongo.geometrydata.CustomMongoRepository;
+import com.example.springmongo.geometrydata.GeometryData;
+import com.example.springmongo.geometrydata.OnSaveData;
+import com.example.springmongo.geometrydata.PGeometryDataRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +27,9 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
-public class TestController {
+public class ConverContoller {
 
-    private static final Logger log = LoggerFactory.getLogger(TestController.class);
+    private static final Logger log = LoggerFactory.getLogger(ConverContoller.class);
 
     @Autowired
     private PGeometryDataRepository pgeometryRepository;
@@ -35,18 +39,6 @@ public class TestController {
 
     @Autowired
     private CustomMongoRepository<OnSaveData> customMongoRepository;
-
-    @PostMapping("/")
-    public List test(@RequestBody List<UUID> uuids) {
-//        UUID uuid = UUID.randomUUID();
-//        GeometryData data = new GeometryData();
-//        data.setUuid(uuid);
-//        customMongoRepository.save(data);
-//        customMongoRepository.findById(uuid);
-//        var time = System.currentTimeMillis();
-        var a = customMongoRepository.findById(UUID.fromString("41778eb8-132a-4126-bcf8-56938c4a9209"));
-        return null;
-    }
 
     @GetMapping("/drop")
     public void dropCollection() {

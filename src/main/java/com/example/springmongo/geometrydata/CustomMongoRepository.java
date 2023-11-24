@@ -1,4 +1,4 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.gridfs.GridFSBucket;
@@ -78,7 +78,7 @@ public class CustomMongoRepository<T extends OnSaveData> {
     }
 
     public void deleteAll(List<UUID> uuids) {
-        gridFsTemplate.delete(new Query(Criteria.where("_id").nin(uuids)));
+        gridFsTemplate.delete(new Query(Criteria.where("_id").in(uuids)));
     }
 
     private T deserialize(GridFSFile file) {

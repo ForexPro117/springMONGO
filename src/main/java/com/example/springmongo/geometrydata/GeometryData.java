@@ -1,4 +1,4 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
 
 import javax.persistence.Column;
