@@ -1,19 +1,58 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.UUID;
 
-@Document(collection = "geometryData")
-public class MongoGeometryData extends EntityUuid {
+@Entity
+@Table(indexes = {@Index(name = "idx_hashcode", columnList = "hashCode")})
+public class GeometryData implements Serializable {
 
+    @Id
+    @GeneratedValue
+    private UUID uuid;
+
+    @Column(columnDefinition = "text")
     private String hashCode;
+
+
     private int[] indices;
-    private double[] vertices;
+
+    double[] vertices;
+
     private float[] normals;
+
     private int[] colorsQuantized;
+
     private float[] colors;
 
+    private Timestamp createDate;
+
+    private boolean converted;
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public boolean isConverted() {
+        return converted;
+    }
+
+    public void setConverted(boolean converted) {
+        this.converted = converted;
+    }
 
     public String getHashCode() {
         return hashCode;
@@ -21,6 +60,14 @@ public class MongoGeometryData extends EntityUuid {
 
     public void setHashCode(String hashCode) {
         this.hashCode = hashCode;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public int[] getIndices() {
@@ -82,4 +129,17 @@ public class MongoGeometryData extends EntityUuid {
         }
         return hashCode.toString();
     }
+
+    public OnSaveData convert() {
+        OnSaveData data = new OnSaveData();
+        data.setUuid(uuid);
+        data.setHashCode(hashCode);
+        data.setIndices(indices);
+        data.setVertices(vertices);
+        data.setNormals(normals);
+        data.setColorsQuantized(colorsQuantized);
+        data.setColors(colors);
+        return data;
+    }
+
 }

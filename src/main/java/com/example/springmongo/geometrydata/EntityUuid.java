@@ -1,4 +1,4 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.HashIndexed;

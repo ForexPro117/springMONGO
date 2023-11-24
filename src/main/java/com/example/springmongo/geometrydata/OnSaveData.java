@@ -1,18 +1,25 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.UUID;
 
-@Document(collection = "geometryData")
-public class MongoGeometryDataBin extends EntityUuid {
+public class OnSaveData implements Serializable {
+    private UUID uuid;
 
     private String hashCode;
-    private byte[] indices;
-    private byte[] vertices;
-    private byte[] normals;
-    private byte[] colorsQuantized;
-    private byte[] colors;
+
+
+    private int[] indices;
+
+    double[] vertices;
+
+    private float[] normals;
+
+    private int[] colorsQuantized;
+
+    private float[] colors;
 
 
     public String getHashCode() {
@@ -23,43 +30,51 @@ public class MongoGeometryDataBin extends EntityUuid {
         this.hashCode = hashCode;
     }
 
-    public byte[] getIndices() {
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public int[] getIndices() {
         return indices;
     }
 
-    public void setIndices(byte[] indices) {
+    public void setIndices(int[] indices) {
         this.indices = indices;
     }
 
-    public byte[] getVertices() {
+    public double[] getVertices() {
         return vertices;
     }
 
-    public void setVertices(byte[] vertices) {
+    public void setVertices(double[] vertices) {
         this.vertices = vertices;
     }
 
-    public byte[] getNormals() {
+    public float[] getNormals() {
         return normals;
     }
 
-    public void setNormals(byte[] normals) {
+    public void setNormals(float[] normals) {
         this.normals = normals;
     }
 
-    public byte[] getColorsQuantized() {
+    public int[] getColorsQuantized() {
         return colorsQuantized;
     }
 
-    public void setColorsQuantized(byte[] colorsQuantized) {
+    public void setColorsQuantized(int[] colorsQuantized) {
         this.colorsQuantized = colorsQuantized;
     }
 
-    public byte[] getColors() {
+    public float[] getColors() {
         return colors;
     }
 
-    public void setColors(byte[] colors) {
+    public void setColors(float[] colors) {
         this.colors = colors;
     }
 
@@ -82,4 +97,5 @@ public class MongoGeometryDataBin extends EntityUuid {
         }
         return hashCode.toString();
     }
+
 }

@@ -1,36 +1,19 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
+import com.example.springmongo.geometrydata.EntityUuid;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Index;
-import javax.persistence.Table;
 import java.util.Arrays;
-import java.util.UUID;
 
-@Entity
-@Table(indexes = {@Index(name = "idx_hashcode", columnList = "hashCode")})
-public class GeometryData {
+@Document(collection = "geometryData")
+public class MongoGeometryDataBin extends EntityUuid {
 
-    @Id
-    @GeneratedValue
-    private UUID uuid;
-
-    @Column(columnDefinition = "text")
     private String hashCode;
-
-
-    private int[] indices;
-
-    double[] vertices;
-
-    private float[] normals;
-
-    private int[] colorsQuantized;
-
-    private float[] colors;
+    private byte[] indices;
+    private byte[] vertices;
+    private byte[] normals;
+    private byte[] colorsQuantized;
+    private byte[] colors;
 
 
     public String getHashCode() {
@@ -41,51 +24,43 @@ public class GeometryData {
         this.hashCode = hashCode;
     }
 
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public int[] getIndices() {
+    public byte[] getIndices() {
         return indices;
     }
 
-    public void setIndices(int[] indices) {
+    public void setIndices(byte[] indices) {
         this.indices = indices;
     }
 
-    public double[] getVertices() {
+    public byte[] getVertices() {
         return vertices;
     }
 
-    public void setVertices(double[] vertices) {
+    public void setVertices(byte[] vertices) {
         this.vertices = vertices;
     }
 
-    public float[] getNormals() {
+    public byte[] getNormals() {
         return normals;
     }
 
-    public void setNormals(float[] normals) {
+    public void setNormals(byte[] normals) {
         this.normals = normals;
     }
 
-    public int[] getColorsQuantized() {
+    public byte[] getColorsQuantized() {
         return colorsQuantized;
     }
 
-    public void setColorsQuantized(int[] colorsQuantized) {
+    public void setColorsQuantized(byte[] colorsQuantized) {
         this.colorsQuantized = colorsQuantized;
     }
 
-    public float[] getColors() {
+    public byte[] getColors() {
         return colors;
     }
 
-    public void setColors(float[] colors) {
+    public void setColors(byte[] colors) {
         this.colors = colors;
     }
 
@@ -108,5 +83,4 @@ public class GeometryData {
         }
         return hashCode.toString();
     }
-
 }

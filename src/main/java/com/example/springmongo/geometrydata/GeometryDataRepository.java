@@ -1,4 +1,4 @@
-package com.example.springmongo;
+package com.example.springmongo.geometrydata;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
