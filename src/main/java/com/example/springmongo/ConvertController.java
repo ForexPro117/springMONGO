@@ -12,12 +12,14 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,15 @@ public class ConvertController {
 
     @Autowired
     private CustomMongoRepository<OnSaveData> customMongoRepository;
+
+    @PostMapping("/")
+    public List<OnSaveData> testSpeed() {
+        var list = geometryRepository.findAll(PageRequest.of(new Random().nextInt(30), 200)).stream().parallel().map(GeometryData::getUuid).collect(Collectors.toList());
+        Instant start = Instant.now();
+        var objs = customMongoRepository.findAll(list);
+        log.info("1) Get from base " + Duration.between(start, Instant.now()).toMillis() + " ms; List size: 200");
+        return objs;
+    }
 
     @GetMapping("/drop")
     public void dropCollection() {

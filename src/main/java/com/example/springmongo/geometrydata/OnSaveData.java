@@ -1,11 +1,9 @@
 package com.example.springmongo.geometrydata;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.UUID;
 
-public class OnSaveData implements Serializable {
+public class OnSaveData{
     private UUID uuid;
 
     private String hashCode;
