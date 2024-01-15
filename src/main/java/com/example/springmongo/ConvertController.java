@@ -2,24 +2,24 @@ package com.example.springmongo;
 
 import com.example.springmongo.geometrydata.CustomMongoRepository;
 import com.example.springmongo.geometrydata.GeometryData;
-import com.example.springmongo.geometrydata.OnSaveData;
 import com.example.springmongo.geometrydata.GeometryDataRepository;
+import com.example.springmongo.geometrydata.OnSaveData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -38,13 +38,13 @@ public class ConvertController {
     @Autowired
     private CustomMongoRepository<OnSaveData> customMongoRepository;
 
-    @PostMapping("/")
-    public List<OnSaveData> testSpeed() {
-        var list = geometryRepository.findAll(PageRequest.of(new Random().nextInt(30), 200)).stream().parallel().map(GeometryData::getUuid).collect(Collectors.toList());
-        Instant start = Instant.now();
-        var objs = customMongoRepository.findAll(list);
-        log.info("1) Get from base " + Duration.between(start, Instant.now()).toMillis() + " ms; List size: 200");
-        return objs;
+    @Value("${batchSize:0}")
+    private int batchSize;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void runMergeAfterStart() {
+        if (batchSize <= 0) return;
+        batchConvertDB(batchSize);
     }
 
     @GetMapping("/drop")
@@ -87,7 +87,7 @@ public class ConvertController {
         try {
             log.info("STEP: " + currentChunk + "/" + chunks);
             Instant start = Instant.now();
-            var page = geometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, PageRequest.of(0, batchSize)).toList();
+            var page = geometryRepository.findAllByCreateDateBeforeAndConvertedFalse(dateToConvert, batchSize);
 
             log.info("1) Get from base " + Duration.between(start, start = Instant.now()).toMillis() + " ms; List size: " + page.size());
 

@@ -1,7 +1,5 @@
 package com.example.springmongo.geometrydata;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -16,7 +14,9 @@ import java.util.UUID;
 @Repository
 public interface GeometryDataRepository extends PagingAndSortingRepository<GeometryData, UUID> {
 
-    Page<GeometryData> findAllByCreateDateBeforeAndConvertedFalse(Timestamp date, Pageable pageable);
+
+    @Query(value = " select g.* from geometry_data g where g.converted=false AND g.create_date <=?1 limit ?2", nativeQuery = true)
+    List<GeometryData> findAllByCreateDateBeforeAndConvertedFalse(Timestamp date, int batchSize);
 
     Long countAllByCreateDateBeforeAndConvertedFalse(Timestamp date);
 
