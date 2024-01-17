@@ -43,8 +43,11 @@ public class ConvertController {
 
     @EventListener(ApplicationReadyEvent.class)
     public void runMergeAfterStart() {
+        log.info("batchSize: " + batchSize);
         if (batchSize <= 0) return;
+        log.info("Start parsing process, batchSize: " + batchSize);
         batchConvertDB(batchSize);
+        System.exit(0);
     }
 
     @GetMapping("/drop")
