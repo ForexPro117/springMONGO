@@ -44,7 +44,7 @@ public class ConvertController {
     @EventListener(ApplicationReadyEvent.class)
     public void runMergeAfterStart() {
         log.info("batchSize: " + batchSize);
-        if (batchSize <= 0) return;
+        if (batchSize <= 0) System.exit(0);
         log.info("Start parsing process, batchSize: " + batchSize);
         batchConvertDB(batchSize);
         System.exit(0);
@@ -83,7 +83,7 @@ public class ConvertController {
 
     private boolean pullBatch(int batchSize, Timestamp dateToConvert, int currentChunk, int chunks) {
         try {
-            Thread.sleep(new Random().nextInt(10) + 15);
+            Thread.sleep(new Random().nextInt(50) + 50);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
